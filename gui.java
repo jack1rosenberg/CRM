@@ -3,6 +3,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class gui {
     private JFrame frame;
@@ -12,10 +18,12 @@ public class gui {
     private JTextField txtAddress;
     private JTextArea txtDisplay;
     private ArrayList<Customer> customers;
+    private String fileName;
 
-    public gui() {
+    public gui(String fileName) throws IOException{
         customers = new ArrayList<>();
         frame = new JFrame("CRM System");
+        fileName = this.fileName;
 
         // Labels
         JLabel lblName = new JLabel("Name:");
@@ -68,7 +76,11 @@ public class gui {
         btnAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                addCustomer();
+                try {
+                    addCustomer(fileName);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
 
@@ -95,25 +107,34 @@ public class gui {
 
         // Final setup
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 500);
+        frame.setSize(1000, 1000);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
-    private void addCustomer() {
+    private void addCustomer(String fileName) throws IOException
+    {
+        FileWriter file = new FileWriter(fileName);
+        BufferedWriter myFile = new BufferedWriter(file);
         String name = txtName.getText();
         String email = txtEmail.getText();
         String phone = txtPhone.getText();
         String address = txtAddress.getText();
 
-        if (!name.isEmpty() && !email.isEmpty() && !phone.isEmpty() && !address.isEmpty()) {
+        if (!name.isEmpty() && !phone.isEmpty()){
             Customer customer = new Customer(name, email, phone, address);
             customers.add(customer);
             JOptionPane.showMessageDialog(frame, "Customer added successfully!");
+            myFile.write(customer.getName() + "," + customer.getEmail() +","+ customer.getPhone()+","+customer.getAddress());
             clearFields();
         } else {
-            JOptionPane.showMessageDialog(frame, "All fields must be filled out!");
+            JOptionPane.showMessageDialog(frame, "Please fill out more information.");
         }
+        myFile.close();
+    }
+
+    private void editCustomer() {
+
     }
 
     private void viewCustomers() {
@@ -152,7 +173,11 @@ public class gui {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new gui();
+                try {
+                    new gui("db.txt");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
