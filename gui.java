@@ -1,5 +1,4 @@
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,8 +11,8 @@ public class gui {
     private JTextField txtEmail;
     private JTextField txtPhone;
     private JTextField txtAddress;
-    private JTextArea txtDisplay;
     private JPanel bottomPanel;
+    private JScrollPane scrollPane;
     private ArrayList<Customer> customers;
     private String fileName;
 
@@ -22,7 +21,7 @@ public class gui {
         customers = new ArrayList<>();
         loadCustomers();
     
-        frame = new JFrame("CRM System");
+        frame = new JFrame("Junk CRM");
     
         // Labels
         JLabel lblName = new JLabel("Name:");
@@ -35,12 +34,6 @@ public class gui {
         txtEmail = new JTextField(20);
         txtPhone = new JTextField(20);
         txtAddress = new JTextField(20);
-    
-        /* 
-        txtDisplay = new JTextArea(10, 30);
-        txtDisplay.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(txtDisplay);
-        */
     
         // Buttons
         JButton btnAdd = new JButton("Add Customer");
@@ -67,13 +60,27 @@ public class gui {
         buttonPanel.add(btnEdit);
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnClear);
-        bottomPanel.add(buttonPanel, BorderLayout.NORTH);
+        bottomPanel.add(buttonPanel, BorderLayout.PAGE_END);
     
+        // Create a DefaultListModel to hold customer data
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (Customer customer : customers) {
+            listModel.addElement(customer.getName() + " - " + customer.getPhone());
+        }
+
+        //Panel for client selection
+        JPanel midPanel = new JPanel();
+        midPanel.setLayout(new BorderLayout());
+        JList<String> customerList = new JList<>(listModel);
+        customerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        scrollPane = new JScrollPane(customerList);
+        midPanel.add(scrollPane);
+        
+
         // Layout setup
         frame.setLayout(new BorderLayout(10, 10));
         frame.add(panel, BorderLayout.NORTH);
-        frame.add(bottomPanel, BorderLayout.SOUTH);
-    
+        frame.add(bottomPanel, BorderLayout.PAGE_END);
         // Action Listeners
         btnAdd.addActionListener(new ActionListener() {
             @Override
@@ -107,8 +114,6 @@ public class gui {
             }
         });
     
-        // Call viewCustomers to display the customer list at startup
-        viewCustomers();
     
         // Final setup
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -155,39 +160,6 @@ public class gui {
         } else {
             JOptionPane.showMessageDialog(frame, "Please fill out more information.");
         }
-    }
-
-    private void viewCustomers() {
-        // Clear the bottom panel to prepare for repopulation
-        bottomPanel.removeAll();
-    
-        // Create a DefaultListModel to hold customer data
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (Customer customer : customers) {
-            listModel.addElement(customer.getName() + " - " + customer.getPhone());
-        }
-    
-        // Create a JList to display the customer data
-        JList<String> customerList = new JList<>(listModel);
-        customerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        JScrollPane scrollPane = new JScrollPane(customerList);
-    
-        // Re-add the buttons at the top of the bottom panel
-        JPanel buttonPanel = new JPanel();
-        JButton btnEdit = new JButton("Edit Customer");
-        JButton btnDelete = new JButton("Delete Customer");
-        JButton btnClear = new JButton("Clear Fields");
-        buttonPanel.add(btnEdit);
-        buttonPanel.add(btnDelete);
-        buttonPanel.add(btnClear);
-    
-        bottomPanel.setLayout(new BorderLayout());
-        bottomPanel.add(buttonPanel, BorderLayout.NORTH);
-        bottomPanel.add(scrollPane, BorderLayout.CENTER);
-    
-        // Refresh the bottom panel
-        bottomPanel.revalidate();
-        bottomPanel.repaint();
     }
     
 
@@ -262,9 +234,6 @@ public class gui {
                 customerToEdit.setEmail(txtEmail.getText());
                 customerToEdit.setPhone(txtPhone.getText());
                 customerToEdit.setAddress(txtAddress.getText());
-        
-                // Refresh the customer list in the GUI
-                viewCustomers();
         
                 // Save changes to the file
                 saveCustomersToFile();
