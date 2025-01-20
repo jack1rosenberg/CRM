@@ -77,8 +77,9 @@ public class gui {
         // Layout setup
         frame.setLayout(new BorderLayout(10, 10));
         frame.add(panel, BorderLayout.NORTH);
-        frame.add(midPanel, BorderLayout.CENTER); // Add midPanel to the frame
+        frame.add(midPanel, BorderLayout.CENTER); 
         frame.add(bottomPanel, BorderLayout.PAGE_END);
+
         // Action Listeners
         btnAdd.addActionListener(new ActionListener() {
             @Override
@@ -141,7 +142,7 @@ public class gui {
     private void updateCustomerList() {
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (Customer customer : customers) {
-            listModel.addElement(customer.getName() + " - " + customer.getPhone());
+            listModel.addElement(customer.getName() + " - " + customer.getPhone() + " - " + customer.getEmail() + " - " + customer.getAddress());
         }
         customerList.setModel(listModel);
     }
@@ -158,7 +159,7 @@ public class gui {
 
             saveCustomersToFile();
             updateCustomerList();
-            JOptionPane.showMessageDialog(frame, "Customer added successfully!");
+            JOptionPane.showMessageDialog(frame, "Customers updated successfully!");
             clearFields();
         } else {
             JOptionPane.showMessageDialog(frame, "Please fill out more information.");
@@ -169,8 +170,8 @@ public class gui {
     private void saveCustomersToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             for (Customer customer : customers) {
-                writer.write(customer.getName() + "," + customer.getEmail() + "," +
-                        customer.getPhone() + "," + customer.getAddress());
+                writer.write(customer.getName() + "," + customer.getPhone() + "," +
+                        customer.getEmail() + "," + customer.getAddress());
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -196,7 +197,9 @@ private void editCustomer() {
 
     // Find the selected customer
     Customer customerToEdit = customers.stream()
-            .filter(customer -> (customer.getName() + " - " + customer.getPhone()).equals(selectedCustomer))
+            .filter(customer -> (customer.getName() + " - " +
+             customer.getPhone() + " - " + customer.getEmail() + " - " + 
+             customer.getAddress()).equals(selectedCustomer))
             .findFirst()
             .orElse(null);
 
@@ -210,6 +213,9 @@ private void editCustomer() {
     txtEmail.setText(customerToEdit.getEmail());
     txtPhone.setText(customerToEdit.getPhone());
     txtAddress.setText(customerToEdit.getAddress());
+
+    // Remove the old customer from the list
+    customers.remove(customerToEdit);
 }
 
         
