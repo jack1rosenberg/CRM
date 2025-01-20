@@ -13,6 +13,7 @@ public class gui {
     private JTextField txtAddress;
     private JPanel bottomPanel;
     private JScrollPane scrollPane;
+    private JList<String> customerList;
     private ArrayList<Customer> customers;
     private String fileName;
 
@@ -36,7 +37,7 @@ public class gui {
         txtAddress = new JTextField(20);
     
         // Buttons
-        JButton btnAdd = new JButton("Add Customer");
+        JButton btnAdd = new JButton("Confirm Customer");
         JButton btnEdit = new JButton("Edit Customer");
         JButton btnDelete = new JButton("Delete Customer");
         JButton btnClear = new JButton("Clear Fields");
@@ -62,25 +63,21 @@ public class gui {
         buttonPanel.add(btnClear);
         bottomPanel.add(buttonPanel, BorderLayout.PAGE_END);
     
-        // Create a DefaultListModel to hold customer data
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (Customer customer : customers) {
-            listModel.addElement(customer.getName() + " - " + customer.getPhone());
-        }
 
-        //Panel for client selection
-        JPanel midPanel = new JPanel();
-        midPanel.setLayout(new BorderLayout());
-        JList<String> customerList = new JList<>(listModel);
-        customerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        // Initialize the customer list
+        customerList = new JList<>();
+        updateCustomerList();
+
+        // Add the customer list to a scroll pane
         scrollPane = new JScrollPane(customerList);
-        midPanel.add(scrollPane);
+        JPanel midPanel = new JPanel(new BorderLayout());
+        midPanel.add(scrollPane, BorderLayout.CENTER);
         
 
         // Layout setup
         frame.setLayout(new BorderLayout(10, 10));
         frame.add(panel, BorderLayout.NORTH);
-        frame.add(midPanel, BorderLayout.CENTER);
+        frame.add(midPanel, BorderLayout.CENTER); // Add midPanel to the frame
         frame.add(bottomPanel, BorderLayout.PAGE_END);
         // Action Listeners
         btnAdd.addActionListener(new ActionListener() {
@@ -140,6 +137,14 @@ public class gui {
         }
         reader.close();
     }
+    
+    private void updateCustomerList() {
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (Customer customer : customers) {
+            listModel.addElement(customer.getName() + " - " + customer.getPhone());
+        }
+        customerList.setModel(listModel);
+    }
 
     private void addCustomer() throws IOException {
         String name = txtName.getText();
@@ -151,11 +156,8 @@ public class gui {
             Customer customer = new Customer(name, email, phone, address);
             customers.add(customer);
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
-            writer.write(name + "," + email + "," + phone + "," + address);
-            writer.newLine();
-            writer.close();
-
+            saveCustomersToFile();
+            updateCustomerList();
             JOptionPane.showMessageDialog(frame, "Customer added successfully!");
             clearFields();
         } else {
@@ -176,79 +178,73 @@ public class gui {
         }
     }
     
-    
-    private void editCustomer() {
-            // Check if there are customers to edit
-            if (customers.isEmpty()) {
-                JOptionPane.showMessageDialog(frame, "No customers available to edit.");
-                return;
-            }
-        
-            // Prompt the user to select a customer
-            String[] customerNames = customers.stream()
-                    .map(customer -> customer.getName() + " - " + customer.getPhone())
-                    .toArray(String[]::new);
-        
-            String selectedCustomer = (String) JOptionPane.showInputDialog(
-                    frame,
-                    "Select a customer to edit:",
-                    "Edit Customer",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    customerNames,
-                    customerNames[0]
-            );
-        
-            // If no customer is selected, exit
-            if (selectedCustomer == null) {
-                return;
-            }
-        
-            // Find the selected customer
-            Customer customerToEdit = customers.stream()
-                    .filter(customer -> (customer.getName() + " - " + customer.getPhone()).equals(selectedCustomer))
-                    .findFirst()
-                    .orElse(null);
-        
-            if (customerToEdit == null) {
-                JOptionPane.showMessageDialog(frame, "Customer not found.");
-                return;
-            }
-        
-            // Populate the text fields with the customer's current data
-            txtName.setText(customerToEdit.getName());
-            txtEmail.setText(customerToEdit.getEmail());
-            txtPhone.setText(customerToEdit.getPhone());
-            txtAddress.setText(customerToEdit.getAddress());
-        
-            // Prompt the user to confirm and save changes
-            int result = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Edit the details and press OK to save changes.",
-                    "Confirm Edit",
-                    JOptionPane.OK_CANCEL_OPTION
-            );
-        
-            if (result == JOptionPane.OK_OPTION) {
-                // Update customer details
-                customerToEdit.setName(txtName.getText());
-                customerToEdit.setEmail(txtEmail.getText());
-                customerToEdit.setPhone(txtPhone.getText());
-                customerToEdit.setAddress(txtAddress.getText());
-        
-                // Save changes to the file
-                saveCustomersToFile();
-        
-                JOptionPane.showMessageDialog(frame, "Customer details updated successfully!");
-            }
-        
-            // Clear the text fields after editing
-            clearFields();
-        }
+
+
+private void editCustomer() {
+    // Check if there are customers to edit
+    if (customers.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No customers available to edit.");
+        return;
+    }
+
+    // Get the selected customer from the customer list
+    String selectedCustomer = customerList.getSelectedValue();
+    if (selectedCustomer == null) {
+        JOptionPane.showMessageDialog(frame, "Please select a customer to edit.");
+        return;
+    }
+
+    // Find the selected customer
+    Customer customerToEdit = customers.stream()
+            .filter(customer -> (customer.getName() + " - " + customer.getPhone()).equals(selectedCustomer))
+            .findFirst()
+            .orElse(null);
+
+    if (customerToEdit == null) {
+        JOptionPane.showMessageDialog(frame, "Customer not found.");
+        return;
+    }
+
+    // Populate the text fields with the customer's current data
+    txtName.setText(customerToEdit.getName());
+    txtEmail.setText(customerToEdit.getEmail());
+    txtPhone.setText(customerToEdit.getPhone());
+    txtAddress.setText(customerToEdit.getAddress());
+}
+
         
 
     private void deleteCustomer() {
+    // Check if there are customers to delete
+    if (customers.isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "No customers available to edit.");
+        return;
+    }
 
+    // Get the selected customer from the customer list
+    String selectedCustomer = customerList.getSelectedValue();
+    if (selectedCustomer == null) {
+        JOptionPane.showMessageDialog(frame, "Please select a customer to edit.");
+        return;
+    }
+
+    // Find the selected customer
+    Customer customerToEdit = customers.stream()
+            .filter(customer -> (customer.getName() + " - " + customer.getPhone()).equals(selectedCustomer))
+            .findFirst()
+            .orElse(null);
+
+    if (customerToEdit == null) {
+        JOptionPane.showMessageDialog(frame, "Customer not found.");
+        return;
+    }
+
+    // Remove the customer from the list
+    JOptionPane.showConfirmDialog(frame, "Delete Customer?", "Cancel", JOptionPane.YES_NO_OPTION);
+    customers.remove(customerToEdit);
+    updateCustomerList();
+    saveCustomersToFile();
+    JOptionPane.showMessageDialog(frame, "Customer deleted successfully.");
     }
 
     private void clearFields() {
