@@ -80,6 +80,7 @@ public class gui {
         // Layout setup
         frame.setLayout(new BorderLayout(10, 10));
         frame.add(panel, BorderLayout.NORTH);
+        frame.add(midPanel, BorderLayout.CENTER);
         frame.add(bottomPanel, BorderLayout.PAGE_END);
         // Action Listeners
         btnAdd.addActionListener(new ActionListener() {
