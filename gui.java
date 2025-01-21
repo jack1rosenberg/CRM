@@ -142,7 +142,7 @@ public class gui {
     private void updateCustomerList() {
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (Customer customer : customers) {
-            listModel.addElement(customer.getName() + " - " + customer.getPhone() + " - " + customer.getEmail() + " - " + customer.getAddress());
+            listModel.addElement(customer.getName() + " - " + customer.getPhone());
         }
         customerList.setModel(listModel);
     }
@@ -223,35 +223,38 @@ private void editCustomer() {
     private void deleteCustomer() {
     // Check if there are customers to delete
     if (customers.isEmpty()) {
-        JOptionPane.showMessageDialog(frame, "No customers available to edit.");
+        JOptionPane.showMessageDialog(frame, "No customers available to delete.");
         return;
     }
 
     // Get the selected customer from the customer list
     String selectedCustomer = customerList.getSelectedValue();
     if (selectedCustomer == null) {
-        JOptionPane.showMessageDialog(frame, "Please select a customer to edit.");
+        JOptionPane.showMessageDialog(frame, "Please select a customer to delete.");
         return;
     }
 
     // Find the selected customer
-    Customer customerToEdit = customers.stream()
+    Customer customerToDelete = customers.stream()
             .filter(customer -> (customer.getName() + " - " + customer.getPhone()).equals(selectedCustomer))
             .findFirst()
             .orElse(null);
 
-    if (customerToEdit == null) {
+    if (customerToDelete == null) {
         JOptionPane.showMessageDialog(frame, "Customer not found.");
         return;
     }
 
-    // Remove the customer from the list
-    JOptionPane.showConfirmDialog(frame, "Delete Customer?", "Cancel", JOptionPane.YES_NO_OPTION);
-    customers.remove(customerToEdit);
-    updateCustomerList();
-    saveCustomersToFile();
-    JOptionPane.showMessageDialog(frame, "Customer deleted successfully.");
+    // Confirm deletion
+    int confirm = JOptionPane.showConfirmDialog(frame, "Delete Customer?", "Confirm", JOptionPane.YES_NO_OPTION);
+    if (confirm == JOptionPane.YES_OPTION) {
+        // Remove the customer from the list
+        customers.remove(customerToDelete);
+        updateCustomerList();
+        saveCustomersToFile();
+        JOptionPane.showMessageDialog(frame, "Customer deleted successfully!");
     }
+}
 
     private void clearFields() {
         txtName.setText("");
